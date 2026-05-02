@@ -1,49 +1,65 @@
 # Deployment congestion collapse simulation
 
-This repo contains a Monte Carlo simulator for the idea that high commit velocity plus slow build/deploy cycles can create a form of deployment congestion collapse.
+This repository contains a Monte Carlo simulator for a specific failure mode in high-velocity delivery systems: when the elapsed time from commit to validated deployment is long relative to the commit arrival rate, failed changes can cause the unresolved deployment backlog to grow faster than it is cleared.
 
-Once a bad batch enters the pipeline, the next deployment attempt is not “clean” again — it inherits the unresolved backlog plus all newly landed commits. That feedback loop is the core behavior this model is trying to visualize.
+The purpose of the model is not to estimate any particular team's exact production risk. It is to isolate and visualize the compounding effect created by pipeline latency.
 
-## Summary
+## Core mechanism
 
-- Built a retry-aware deployment simulator in `simulate_deployment_congestion.py`.
-- Modeled engineers committing at an average rate of **100 commits/day**.
-- Concentrated most commits into a realistic **10-hour workday** instead of spreading them uniformly across 24 hours.
-- Generated a heatmap showing how deployment success degrades as the build+deploy cycle length grows and the bug rate rises.
+Assume the delivery pipeline takes `N` hours from commit until a change is built, deployed to a test or beta environment, and evaluated.
 
-## Current assumptions
+If a commit contains a defect, the effect is not limited to that single commit:
+
+1. The defective commit enters the pipeline at time `t0`.
+2. The defect is detected only after approximately `N` hours, when that deployment attempt completes.
+3. A revert is then committed.
+4. The next deployment attempt completes roughly another `N` hours later.
+
+Critically, that second deployment attempt is **not** a fresh start. It contains:
+
+- the unresolved commits that were already in flight when the defect was detected, and
+- the additional commits that landed while the system was waiting for detection, rollback, and the next attempt.
+
+That accumulation is the mechanism of interest. Longer pipeline latency increases the number of commits that can accumulate between validation points. Once failures occur, each retry operates on a larger unresolved batch, which increases the probability of another failure. That feedback loop is the source of the modeled congestion-collapse behavior.
+
+## Model scope
 
 - **Commit arrivals:** non-homogeneous Poisson process.
-- **Workday shape:** morning ramp, lunch dip, afternoon peak.
-- **Bug rate axis:** `1 in 400` through `1 in 40` on a log scale.
-- **X axis:** duration of the build + deploy cycle, from `1` to `12` hours.
-- **Failure handling:** when a deployment fails, one bad commit is reverted, but the unresolved batch remains queued and the next deployment also carries newly landed commits.
-- **Outcome metric:** success probability per deployment attempt.
+- **Commit volume:** mean of `100` commits per day.
+- **Workday shape:** commits concentrated into a realistic `10`-hour work window with a morning ramp, lunch dip, and afternoon peak.
+- **Bug probability:** independent per commit.
+- **Pipeline duration:** `1` to `12` hours.
+- **Bug-rate axis in the current chart:** `1 in 400` through `1 in 40` on a log scale.
+- **Failure handling:** when a deployment attempt fails, one bad commit is reverted, but the remaining unresolved batch persists into the next attempt together with any newly landed commits.
+- **Reported metric:** success probability per deployment attempt.
 
-## Results snapshot
+This is intentionally a reduced model. It does not attempt to represent every operational mitigation a real deployment system may have, such as canary segmentation, partial isolation, selective queue draining, commit bisection, or manual intervention.
 
-- At **1 in 400**, success is about **97.6%** at `1h`, **88.5%** at `6h`, and **78.1%** at `12h`.
-- At **1 in 100**, success is about **89.1%** at `1h`, **60.8%** at `6h`, and **42.0%** at `12h`.
-- At **1 in 40**, success is about **71.5%** at `1h`, **25.7%** at `6h`, and **0.7%** at `12h`.
+## Current results
 
-Those last numbers are the key qualitative result: once bug rates are only moderately elevated and the cycle time gets long enough, the retry backlog drives the system into a “Plateau of Misery” where successful deployments become rare.
+- At **1 in 400**, success is approximately **97.6%** at `1h`, **88.5%** at `6h`, and **78.1%** at `12h`.
+- At **1 in 100**, success is approximately **89.1%** at `1h`, **60.8%** at `6h`, and **42.0%** at `12h`.
+- At **1 in 40**, success is approximately **71.5%** at `1h`, **25.7%** at `6h`, and **0.7%** at `12h`.
+
+The relevant qualitative result is that the interaction between non-trivial defect rates and long validation latency is strongly nonlinear. Moderate increases in either parameter can move the system from a regime where most deployment attempts succeed to one where successful attempts become rare.
 
 ## Visualization
 
 ![Deployment success heatmap](output/deployment_success_heatmap.png)
 
-## Generated artifacts
+## Repository contents
 
-- `output/deployment_success_heatmap.png` — presentation-friendly preview image.
-- `output/deployment_success_heatmap.svg` — vector version of the same heatmap.
-- `output/deployment_success_data.csv` — raw simulated results for every heatmap cell.
-- `output/working_day_commit_density.csv` — the workday traffic profile used by the simulator.
-- `output/simulation_summary.md` — short model summary.
+- `simulate_deployment_congestion.py` — simulation and chart generation logic.
+- `output/deployment_success_heatmap.png` — raster preview of the current chart.
+- `output/deployment_success_heatmap.svg` — vector version of the chart.
+- `output/deployment_success_data.csv` — simulated output for each heatmap cell.
+- `output/working_day_commit_density.csv` — workday traffic profile used by the simulator.
+- `output/simulation_summary.md` — short summary of the modeled assumptions.
 
-## Run it
+## Reproduce
 
 ```bash
 python3 simulate_deployment_congestion.py
 ```
 
-The core simulator uses only the Python standard library. The committed PNG preview is a generated artifact included for convenience in the README.
+The simulator itself uses only the Python standard library. The committed PNG is a generated artifact included for convenience in the README.
