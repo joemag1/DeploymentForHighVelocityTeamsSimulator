@@ -47,7 +47,7 @@ The relevant qualitative result is that the interaction between non-trivial defe
 
 ## Visualization
 
-![Deployment success heatmap](output/deployment_success_heatmap.png)
+![Deployment success heatmap](output/deployment_success_heatmap.svg)
 
 ## Repository contents
 
