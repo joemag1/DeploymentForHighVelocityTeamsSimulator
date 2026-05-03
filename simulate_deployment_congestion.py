@@ -337,7 +337,7 @@ def render_heatmap_svg(
 
     island_text_x = left + 28
     island_text_y = top + plot_height - 56
-    lines.append(f'<text x="{island_text_x:.2f}" y="{island_text_y:.2f}" text-anchor="start" fill="#111827" font-size="15" font-weight="700">Island of Happiness</text>')
+    lines.append(f'<text x="{island_text_x:.2f}" y="{island_text_y:.2f}" text-anchor="start" fill="#111827" font-size="15" font-weight="700">Island of Success</text>')
 
     plateau_text_x = left + plot_width - 330
     plateau_text_y = top + 168
