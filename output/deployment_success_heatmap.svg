@@ -2047,6 +2047,6 @@ text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; f
 <text x="635.27" y="294.54" class="contour">50%</text>
 <path d="M 684.55 112.52 Q 703.64 110.97 722.73 117.22 Q 741.82 123.46 760.91 123.74 Q 780.00 124.01 789.55 124.67 Q 799.09 125.34 808.64 144.39 Q 818.18 163.44 827.73 168.91 Q 837.27 174.37 846.82 174.54 Q 856.36 174.70 865.91 175.92 Q 875.45 177.13 885.00 174.25 Q 894.55 171.37 904.09 181.62 Q 913.64 191.88 923.18 195.67 Q 932.73 199.46 942.27 198.76 Q 951.82 198.07 961.36 197.92 Q 970.91 197.78 980.45 206.82 Q 970.91 197.78 990.00 215.86" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.95" stroke-linecap="round" stroke-linejoin="round"/>
 <text x="864.36" y="168.70" class="contour">10%</text>
-<text x="178.00" y="686.00" text-anchor="start" fill="#111827" font-size="15" font-weight="700">Island of Success</text>
+<text x="178.00" y="686.00" text-anchor="start" fill="#111827" font-size="15" font-weight="700">Valley of Calm</text>
 <text x="660.00" y="278.00" text-anchor="start" fill="#111827" font-size="22" font-weight="800" opacity="0.92">Plateau of Misery</text>
 </svg>
